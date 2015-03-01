@@ -9,13 +9,17 @@ class Configuration {
     const CACHE_MINUTES_KEY = 'cache_http_minutes';
     const WIDTH_KEY = 'width';
     const HEIGHT_KEY = 'height';
+    const OUTPUT_KEY = 'output-filename';
 
     const CONVERT_PATH = 'convert';
 
     private $opts;
 
     public function __construct($opts=array()) {
+        // TODO: I could get rid of the sanitize
         $sanitized= $this->sanitize($opts);
+
+        $this->validate($opts);
 
         $defaults = array(
             'crop' => false,
@@ -23,13 +27,11 @@ class Configuration {
             'thumbnail' => false,
             'maxOnly' => false,
             'canvas-color' => 'transparent',
-            'output-filename' => false,
             self::CACHE_KEY => self::CACHE_PATH,
             self::REMOTE_KEY => self::REMOTE_PATH,
             'quality' => 90,
             'cache_http_minutes' => 20,
-            'width' => null,
-            'height' => null);
+        );
 
         $this->opts = array_merge($defaults, $sanitized);
     }
@@ -61,6 +63,16 @@ class Configuration {
     public function obtainCacheMinutes() {
         return $this->opts[self::CACHE_MINUTES_KEY];
     }
+
+    private function validate ($opts) {
+        if (empty($opts[self::WIDTH_KEY]) &&
+            empty($opts[self::HEIGHT_KEY]) &&
+            empty($opts[self::OUTPUT_KEY])
+        ) {
+            throw new InvalidArgumentException();
+        }
+    }
+
     private function sanitize($opts) {
         if($opts == null) return array();
 
@@ -68,3 +80,5 @@ class Configuration {
     }
 
 }
+
+?>

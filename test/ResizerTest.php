@@ -12,19 +12,12 @@ class ResizerTest extends PHPUnit_Framework_TestCase {
      * @expectedException InvalidArgumentException
      */
     public function testNecessaryCollaboration() {
-        $resizer = new Resizer('anyNonPathObject');
-    }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testOptionalCollaboration() {
+        $resizer = new Resizer('anyNonPathObject', new Configuration(array('height' => 20)));
         $resizer = new Resizer(new ImagePath(''), 'nonConfigurationObject');
     }
 
     public function testInstantiation() {
-        $this->assertInstanceOf('Resizer', new Resizer(new ImagePath(''), new Configuration()));
-        $this->assertInstanceOf('Resizer', new Resizer(new ImagePath('')));
+        $this->assertInstanceOf('Resizer', new Resizer(new ImagePath(''), new Configuration(array('height' => 20))));
     }
 
     public function testObtainLocallyCachedFilePath() {
@@ -66,7 +59,11 @@ class ResizerTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testCreateNewPath() {
-        $resizer = new Resizer(new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler'));
+        $configuration = new Configuration(array('width' => 800, 'height' => 600));
+        $resizer = new Resizer(
+            new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler'),
+            $configuration
+        );
     }
 
 }
