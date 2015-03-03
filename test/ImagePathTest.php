@@ -3,15 +3,6 @@ require_once 'ImagePath.php';
 
 class ImagePathTest extends PHPUnit_Framework_TestCase {
 
-    public function testIsSanitizedAtInstantiation() {
-        $url = 'https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#safe=off&q=php%20define%20dictionary';
-        $expected = 'https://www.google.com/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#safe=off&q=php define dictionary';
-
-        $imagePath = new ImagePath($url);
-
-        $this->assertEquals($expected, $imagePath->sanitizedPath());
-    }
-
     public function testIsHttpProtocol() {
         $url = 'https://example.com';
 

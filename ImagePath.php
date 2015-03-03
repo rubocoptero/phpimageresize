@@ -2,12 +2,12 @@
 
 class ImagePath {
 
-    private $path;
+    private $original;
     private $valid_http_protocols = array('http', 'https');
     private $fileSystem;
 
     public function __construct($url='') {
-        $this->path = $this->sanitize($url);
+        $this->original = $this->sanitize($url);
         $this->fileSystem = new FileSystem();
     }
 
@@ -15,16 +15,12 @@ class ImagePath {
         $this->fileSystem = $fileSystem;
     }
 
-    public function sanitizedPath() {
-        return $this->path;
-    }
-
     public function isHttpProtocol() {
         return in_array($this->obtainScheme(), $this->valid_http_protocols);
     }
 
     public function obtainFileName() {
-        $finfo = pathinfo($this->path);
+        $finfo = pathinfo($this->original);
         list($filename) = explode('?',$finfo['basename']);
         return $filename;
     }
@@ -77,7 +73,7 @@ class ImagePath {
     }
 
     private function download($filePath) {
-        $img = $this->fileSystem->file_get_contents($this->sanitizedPath());
+        $img = $this->fileSystem->file_get_contents($this->original);
         $this->fileSystem->file_put_contents($filePath,$img);
     }
 
@@ -97,8 +93,8 @@ class ImagePath {
     }
 
     private function obtainScheme() {
-        if ($this->path == '') return '';
-        $purl = parse_url($this->path);
+        if ($this->original == '') return '';
+        $purl = parse_url($this->original);
         return $purl['scheme'];
     }
 
