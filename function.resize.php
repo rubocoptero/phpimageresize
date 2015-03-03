@@ -4,68 +4,6 @@ require 'ImagePath.php';
 require 'Configuration.php';
 require 'Resizer.php';
 
-function defaultShellCommand($configuration, $imagePath, $newPath) {
-	$opts = $configuration->asHash();
-	$w = $configuration->obtainWidth();
-	$h = $configuration->obtainHeight();
-
-	$command = $configuration->obtainConvertPath() ." " . escapeshellarg($imagePath) .
-	" -thumbnail ". (!empty($h) ? 'x':'') . $w ."".
-	(isset($opts['maxOnly']) && $opts['maxOnly'] == true ? "\>" : "") .
-	" -quality ". escapeshellarg($opts['quality']) ." ". escapeshellarg($newPath);
-
-	return $command;
-}
-
-function isPanoramic($imagePath) {
-	list($width,$height) = getimagesize($imagePath);
-	return $width > $height;
-}
-
-function composeResizeOptions($imagePath, $configuration) {
-	$opts = $configuration->asHash();
-	$w = $configuration->obtainWidth();
-	$h = $configuration->obtainHeight();
-
-	$resize = "x".$h;
-
-	$hasCrop = (true === $opts['crop']);
-
-	if(!$hasCrop && isPanoramic($imagePath)):
-		$resize = $w;
-	endif;
-
-	if($hasCrop && !isPanoramic($imagePath)):
-		$resize = $w;
-	endif;
-
-	return $resize;
-}
-
-function commandWithScale($imagePath, $newPath, $configuration) {
-	$opts = $configuration->asHash();
-	$resize = composeResizeOptions($imagePath, $configuration);
-
-	$cmd = $configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
-		" -quality ". escapeshellarg($opts['quality']) . " " . escapeshellarg($newPath);
-
-	return $cmd;
-}
-
-function commandWithCrop($imagePath, $newPath, $configuration) {
-	$opts = $configuration->asHash();
-	$w = $configuration->obtainWidth();
-	$h = $configuration->obtainHeight();
-	$resize = composeResizeOptions($imagePath, $configuration);
-
-	$cmd = $configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
-		" -size ". escapeshellarg($w ."x". $h) .
-		" xc:". escapeshellarg($opts['canvas-color']) .
-		" +swap -gravity center -composite -quality ". escapeshellarg($opts['quality'])." ".escapeshellarg($newPath);
-
-	return $cmd;
-}
-
 function doResize($imagePath, $newPath, $configuration) {
 	$opts = $configuration->asHash();
 	$w = $configuration->obtainWidth();
@@ -85,6 +23,68 @@ function doResize($imagePath, $newPath, $configuration) {
 		error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
 		throw new RuntimeException();
 	}
+}
+
+function commandWithCrop($imagePath, $newPath, $configuration) {
+    $opts = $configuration->asHash();
+    $w = $configuration->obtainWidth();
+    $h = $configuration->obtainHeight();
+    $resize = composeResizeOptions($imagePath, $configuration);
+
+    $cmd = $configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
+        " -size ". escapeshellarg($w ."x". $h) .
+        " xc:". escapeshellarg($opts['canvas-color']) .
+        " +swap -gravity center -composite -quality ". escapeshellarg($opts['quality'])." ".escapeshellarg($newPath);
+
+    return $cmd;
+}
+
+function commandWithScale($imagePath, $newPath, $configuration) {
+    $opts = $configuration->asHash();
+    $resize = composeResizeOptions($imagePath, $configuration);
+
+    $cmd = $configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
+        " -quality ". escapeshellarg($opts['quality']) . " " . escapeshellarg($newPath);
+
+    return $cmd;
+}
+
+function defaultShellCommand($configuration, $imagePath, $newPath) {
+    $opts = $configuration->asHash();
+    $w = $configuration->obtainWidth();
+    $h = $configuration->obtainHeight();
+
+    $command = $configuration->obtainConvertPath() ." " . escapeshellarg($imagePath) .
+        " -thumbnail ". (!empty($h) ? 'x':'') . $w ."".
+        (isset($opts['maxOnly']) && $opts['maxOnly'] == true ? "\>" : "") .
+        " -quality ". escapeshellarg($opts['quality']) ." ". escapeshellarg($newPath);
+
+    return $command;
+}
+
+function composeResizeOptions($imagePath, $configuration) {
+    $opts = $configuration->asHash();
+    $w = $configuration->obtainWidth();
+    $h = $configuration->obtainHeight();
+
+    $resize = "x".$h;
+
+    $hasCrop = (true === $opts['crop']);
+
+    if(!$hasCrop && isPanoramic($imagePath)):
+        $resize = $w;
+    endif;
+
+    if($hasCrop && !isPanoramic($imagePath)):
+        $resize = $w;
+    endif;
+
+    return $resize;
+}
+
+function isPanoramic($imagePath) {
+    list($width,$height) = getimagesize($imagePath);
+    return $width > $height;
 }
 
 function isInCache($path, $imagePath) {
