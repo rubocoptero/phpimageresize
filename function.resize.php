@@ -4,25 +4,6 @@ require 'ImagePath.php';
 require 'Configuration.php';
 require 'Resizer.php';
 
-function sanitize($path) {
-	return urldecode($path);
-}
-
-function isInCache($path, $imagePath) {
-	$isInCache = false;
-	if(file_exists($path) == true):
-		$isInCache = true;
-		$origFileTime = date("YmdHis",filemtime($imagePath));
-		$newFileTime = date("YmdHis",filemtime($path));
-		if($newFileTime < $origFileTime): # Not using $opts['expire-time'] ??
-			$isInCache = false;
-		endif;
-	endif;
-
-	return $isInCache;
-}
-
-
 function defaultShellCommand($configuration, $imagePath, $newPath) {
 	$opts = $configuration->asHash();
 	$w = $configuration->obtainWidth();
@@ -106,6 +87,20 @@ function doResize($imagePath, $newPath, $configuration) {
 	}
 }
 
+function isInCache($path, $imagePath) {
+    $isInCache = false;
+    if(file_exists($path) == true):
+        $isInCache = true;
+        $origFileTime = date("YmdHis",filemtime($imagePath));
+        $newFileTime = date("YmdHis",filemtime($path));
+        if($newFileTime < $origFileTime): # Not using $opts['expire-time'] ??
+            $isInCache = false;
+        endif;
+    endif;
+
+    return $isInCache;
+}
+
 function resize($originalPath,$opts=null){
 	$image = new ImagePath($originalPath);
     try {
@@ -124,7 +119,7 @@ function resize($originalPath,$opts=null){
 	}
 	$destinationPath = $image->obtainDestinationFilePath($sourcePath, $configuration);
 
-    $create = !isInCache($destinationPath, $sourcePath);
+    $create = !$resizer->isInCache($destinationPath, $sourcePath);
 
 	if($create == true):
 		try {
