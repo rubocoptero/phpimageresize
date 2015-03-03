@@ -23,29 +23,4 @@ class ResizerTest extends PHPUnit_Framework_TestCase {
         $configuration = new Configuration(array('width' => 800, 'height' => 600));
         $resizer = new Resizer($configuration);
     }
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testResizeNeedAnImageObject() {
-        $configuration = new Configuration(array('width' => 800, 'height' => 600));
-        $resizer = new Resizer($configuration);
-        $resizer->resize('notAnImage');
-    }
-
-    public function testResizeShouldObtainFilePath() {
-        $configuration = new Configuration(array('width' => 800, 'height' => 600));
-        $resizer = new Resizer($configuration);
-
-        $image = $this->getMockBuilder('ImagePath')->getMock();
-        $image->method('obtainSourceFilePath');
-        $image->expects($this->once())
-            ->method('obtainSourceFilePath')
-            ->with($this->identicalTo('./cache/remote/'));
-
-        $resizer->resize($image);
-    }
-
-
-
 }
