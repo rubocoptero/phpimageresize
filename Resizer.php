@@ -16,10 +16,10 @@ class Resizer {
         $this->fileSystem = $fileSystem;
     }
 
-    public function resize ($image) {
-        $this->checkPath($image);
-
+    public function resize ($originalPath) {
         $opts = $this->configuration->asHash();
+
+        $image = new ImagePath($originalPath);
         $source = $image->obtainSourceFilePath($opts['remoteFolder'], $opts['cache_http_minutes']);
         $destination = $image->obtainDestinationFilePath($source, $this->configuration);
 
@@ -132,10 +132,6 @@ class Resizer {
     private function isPanoramic($imagePath) {
         list($width,$height) = getimagesize($imagePath);
         return $width > $height;
-    }
-
-    private function checkPath($path) {
-        if (!($path instanceof ImagePath)) throw new InvalidArgumentException();
     }
 
     private function checkConfiguration($configuration) {
