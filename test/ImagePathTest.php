@@ -52,7 +52,7 @@ class ImagePathTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals(
             './cache/remote/mf.jpg',
-            $imagePath->obtainFilePath($configuration->obtainRemote(), $configuration->obtainCacheMinutes()));
+            $imagePath->obtainSourceFilePath($configuration->obtainRemote(), $configuration->obtainCacheMinutes()));
 
     }
 
@@ -72,7 +72,54 @@ class ImagePathTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals(
             './cache/remote/mf.jpg',
-            $imagePath->obtainFilePath($configuration->obtainRemote(), $configuration->obtainCacheMinutes()));
+            $imagePath->obtainSourceFilePath($configuration->obtainRemote(), $configuration->obtainCacheMinutes())
+        );
 
+    }
+
+    public function testComposeDestinationFileNameFromDefinedOutputFilename() {
+        $expected = 'mf.jpg';
+        $configuration = new Configuration(array('output-filename' => $expected));
+        $image = new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler');
+        $srcImagePath = './cache/remote/mf.jpg';
+
+        $stub = $this->getMockBuilder('FileSystem')
+            ->getMock();
+        $stub->method('md5_file')
+            ->willReturn('182jsakjfd938210');
+        $stub->method('pathinfo')
+            ->willReturn(array('extension' => '.gif'));
+
+        $image->injectFileSystem($stub);
+
+        $this->assertEquals(
+            $expected,
+            $image->obtainDestinationFilePath($srcImagePath, $configuration)
+        );
+    }
+
+    public function testComposeDestinationFileNameWithScaleCropWidthAndHeight() {
+        $configuration = new Configuration(array(
+            'scale' => 4.0,
+            'width' => 80,
+            'height' => 28,
+            'crop' => true
+        ));
+        $image = new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler');
+        $srcImagePath = './cache/remote/mf.jpg';
+
+        $stub = $this->getMockBuilder('FileSystem')
+            ->getMock();
+        $stub->method('md5_file')
+            ->willReturn('182jsakjfd938210');
+        $stub->method('pathinfo')
+            ->willReturn(array('extension' => 'gif'));
+
+        $image->injectFileSystem($stub);
+
+        $this->assertEquals(
+            './cache/182jsakjfd938210_w80_h28_cp_sc.gif',
+            $image->obtainDestinationFilePath($srcImagePath, $configuration)
+        );
     }
 }

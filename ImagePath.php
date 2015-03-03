@@ -29,7 +29,7 @@ class ImagePath {
         return $filename;
     }
 
-    public function obtainFilePath($remoteFolder, $cacheMinutes) {
+    public function obtainSourceFilePath($remoteFolder, $cacheMinutes) {
         $imagePath = '';
 
         if($this->isHttpProtocol()):
@@ -51,6 +51,29 @@ class ImagePath {
         endif;
 
         return $imagePath;
+    }
+
+    public function obtainDestinationFilePath($imagePath, $configuration) {
+        $opts = $configuration->asHash();
+        $w = $configuration->obtainWidth();
+        $h = $configuration->obtainHeight();
+        $filename = $this->fileSystem->md5_file($imagePath);
+        $finfo = $this->fileSystem->pathinfo($imagePath);
+        $ext = $finfo['extension'];
+
+        $cropSignal = isset($opts['crop']) && $opts['crop'] == true ? "_cp" : "";
+        $scaleSignal = isset($opts['scale']) && $opts['scale'] == true ? "_sc" : "";
+        $widthSignal = !empty($w) ? '_w'.$w : '';
+        $heightSignal = !empty($h) ? '_h'.$h : '';
+        $extension = '.'.$ext;
+
+        $newPath = $configuration->obtainCache() .$filename.$widthSignal.$heightSignal.$cropSignal.$scaleSignal.$extension;
+
+        if($opts['output-filename']) {
+            $newPath = $opts['output-filename'];
+        }
+
+        return $newPath;
     }
 
     private function download($filePath) {

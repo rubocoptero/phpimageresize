@@ -14,7 +14,7 @@ class Resizer {
         $this->checkPath($image);
 
         $opts = $this->configuration->asHash();
-        $imagePath = $image->obtainFilePath($opts['remoteFolder'], $opts['cache_http_minutes']);
+        $imagePath = $image->obtainSourceFilePath($opts['remoteFolder'], $opts['cache_http_minutes']);
 
         return $imagePath;
     }

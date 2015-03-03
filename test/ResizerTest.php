@@ -38,12 +38,14 @@ class ResizerTest extends PHPUnit_Framework_TestCase {
         $resizer = new Resizer($configuration);
 
         $image = $this->getMockBuilder('ImagePath')->getMock();
-        $image->method('obtainFilePath');
+        $image->method('obtainSourceFilePath');
         $image->expects($this->once())
-            ->method('obtainFilePath')
+            ->method('obtainSourceFilePath')
             ->with($this->identicalTo('./cache/remote/'));
 
         $resizer->resize($image);
     }
+
+
 
 }
