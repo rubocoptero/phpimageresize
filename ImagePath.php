@@ -4,9 +4,15 @@ class ImagePath {
 
     private $path;
     private $valid_http_protocols = array('http', 'https');
+    private $fileSystem;
 
     public function __construct($url='') {
         $this->path = $this->sanitize($url);
+        $this->fileSystem = new FileSystem();
+    }
+
+    public function injectFileSystem(FileSystem $fileSystem) {
+        $this->fileSystem = $fileSystem;
     }
 
     public function sanitizedPath() {
@@ -23,6 +29,46 @@ class ImagePath {
         return $filename;
     }
 
+    public function obtainFilePath($remoteFolder, $cacheMinutes) {
+        $imagePath = '';
+
+        if($this->isHttpProtocol()):
+            $filename = $this->obtainFileName();
+            $local_filepath = $remoteFolder .$filename;
+            $inCache = $this->isInCache($local_filepath, $cacheMinutes);
+
+            if(!$inCache):
+                $this->download($local_filepath);
+            endif;
+            $imagePath = $local_filepath;
+        endif;
+
+        if(!$this->fileSystem->file_exists($imagePath)):
+            $imagePath = $_SERVER['DOCUMENT_ROOT'].$imagePath;
+            if(!$this->fileSystem->file_exists($imagePath)):
+                throw new RuntimeException();
+            endif;
+        endif;
+
+        return $imagePath;
+    }
+
+    private function download($filePath) {
+        $img = $this->fileSystem->file_get_contents($this->sanitizedPath());
+        $this->fileSystem->file_put_contents($filePath,$img);
+    }
+
+    private function isInCache($filePath, $cacheMinutes) {
+        $fileExists = $this->fileSystem->file_exists($filePath);
+        $fileValid = $this->fileNotExpired($filePath, $cacheMinutes);
+
+        return $fileExists && $fileValid;
+    }
+
+    private function fileNotExpired($filePath, $cacheMinutes) {
+        $this->fileSystem->filemtime($filePath) < strtotime('+'. $cacheMinutes. ' minutes');
+    }
+
     private function sanitize($path) {
         return urldecode($path);
     }
@@ -32,4 +78,6 @@ class ImagePath {
         $purl = parse_url($this->path);
         return $purl['scheme'];
     }
+
+
 }
