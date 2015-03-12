@@ -2,7 +2,10 @@
 
 include 'Configuration.php';
 
-class FunctionResizeTest extends PHPUnit_Framework_TestCase {
+class ConfigurationTest extends PHPUnit_Framework_TestCase {
+    private $minimumOpts = array(
+        'output-filename' => 'somewhere'
+    );
 
     private $defaults = array(
         'crop' => false,
@@ -10,38 +13,35 @@ class FunctionResizeTest extends PHPUnit_Framework_TestCase {
         'thumbnail' => false,
         'maxOnly' => false,
         'canvas-color' => 'transparent',
-        'output-filename' => false,
         'cacheFolder' => './cache/',
         'remoteFolder' => './cache/remote/',
         'quality' => 90,
         'cache_http_minutes' => 20,
-        'width' => null,
-        'height' => null
     );
 
     public function testOpts()
     {
-        $this->assertInstanceOf('Configuration', new Configuration);
+        $this->assertInstanceOf(
+            'Configuration',
+            new Configuration($this->minimumOpts)
+        );
     }
 
-    public function testNullOptsDefaults() {
-        $configuration = new Configuration(null);
+    public function testDefaultsAreMerged() {
+        $opts = $this->minimumOpts;
+        $configuration = new Configuration($opts);
 
-        $this->assertEquals($this->defaults, $configuration->asHash());
-    }
-
-    public function testDefaults() {
-        $configuration = new Configuration();
-        $asHash = $configuration->asHash();
-
-        $this->assertEquals($this->defaults, $asHash);
+        $this->assertEquals(
+            $this->mergeWithDefaults($opts),
+            $configuration->asHash());
     }
 
     public function testDefaultsNotOverwriteConfiguration() {
 
         $opts = array(
             'thumbnail' => true,
-            'maxOnly' => true
+            'maxOnly' => true,
+            'width' => 50
         );
 
         $configuration = new Configuration($opts);
@@ -52,21 +52,35 @@ class FunctionResizeTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testObtainCache() {
-        $configuration = new Configuration();
+        $configuration = new Configuration($this->minimumOpts);
 
         $this->assertEquals('./cache/', $configuration->obtainCache());
     }
 
     public function testObtainRemote() {
-        $configuration = new Configuration();
+        $configuration = new Configuration($this->minimumOpts);
 
         $this->assertEquals('./cache/remote/', $configuration->obtainRemote());
     }
 
     public function testObtainConvertPath() {
-        $configuration = new Configuration();
+        $configuration = new Configuration($this->minimumOpts);
 
         $this->assertEquals('convert', $configuration->obtainConvertPath());
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testThrowsAnExceptionWhenResizeValuesAreNotDefined() {
+        $configuration = new Configuration(null);
+    }
+
+    private function mergeWithDefaults ($opts) {
+        return array_merge(
+            $this->defaults,
+            $opts
+        );
     }
 }
 

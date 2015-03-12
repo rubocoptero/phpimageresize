@@ -8,8 +8,7 @@ class Resizer {
     private $configuration;
     private $fileSystem;
 
-    public function __construct($path, $configuration=null) {
-        if ($configuration == null) $configuration = new Configuration();
+    public function __construct($path, $configuration) {
         $this->checkPath($path);
         $this->checkConfiguration($configuration);
         $this->path = $path;
