@@ -124,8 +124,6 @@ function doResize($imagePath, $newPath, $configuration) {
 }
 
 function resize($imagePath,$opts=null){
-
-
 	$path = new ImagePath($imagePath);
 
     try {

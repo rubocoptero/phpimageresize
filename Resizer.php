@@ -20,6 +20,16 @@ class Resizer {
         $this->fileSystem = $fileSystem;
     }
 
+    private function checkPath($path) {
+        if (!($path instanceof ImagePath)) throw new InvalidArgumentException();
+    }
+
+    private function checkConfiguration($configuration) {
+        if (!($configuration instanceof Configuration)) throw new InvalidArgumentException();
+    }
+
+    // Should to be moved to ImagePath
+
     public function obtainFilePath() {
         $imagePath = '';
 
@@ -61,13 +71,4 @@ class Resizer {
         $cacheMinutes = $this->configuration->obtainCacheMinutes();
         $this->fileSystem->filemtime($filePath) < strtotime('+'. $cacheMinutes. ' minutes');
     }
-
-    private function checkPath($path) {
-        if (!($path instanceof ImagePath)) throw new InvalidArgumentException();
-    }
-
-    private function checkConfiguration($configuration) {
-        if (!($configuration instanceof Configuration)) throw new InvalidArgumentException();
-    }
-
 }
