@@ -124,7 +124,7 @@ function doResize($imagePath, $newPath, $configuration) {
 }
 
 function resize($imagePath,$opts=null){
-	$path = new ImagePath($imagePath);
+	$image = new ImagePath($imagePath);
 
     try {
         $configuration = new Configuration($opts);
@@ -133,16 +133,18 @@ function resize($imagePath,$opts=null){
     }
 
 
-	$resizer = new Resizer($path, $configuration);
+	$resizer = new Resizer($image, $configuration);
 
 	// This has to be done in resizer resize
 
 	try {
-		$imagePath = $resizer->obtainFilePath();
+		$imagePath = $image->obtainFilePath(
+            $configuration->obtainRemote(),
+            $configuration->obtainCacheMinutes()
+        );
 	} catch (Exception $e) {
 		return 'image not found';
 	}
-
 
 	$newPath = composeNewPath($imagePath, $configuration);
 

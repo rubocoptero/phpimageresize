@@ -36,4 +36,38 @@ class ImagePathTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('mf.jpg', $imagePath->obtainFileName());
     }
 
+    public function testObtainLocallyCachedFilePathFromPreviousDownload() {
+        $imagePath = new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler');
+
+        $stub = $this->getMockBuilder('FileSystem')
+            ->getMock();
+        $stub->method('file_get_contents')
+            ->willReturn('foo');
+
+        $stub->method('file_exists')
+            ->willReturn(true);
+
+        $imagePath->injectFileSystem($stub);
+
+        $this->assertEquals('./cache/remote/mf.jpg', $imagePath->obtainFilePath('./cache/remote/', 10));
+
+    }
+
+    public function testLocallyCachedFilePathFailFromPreviousDownload() {
+        $imagePath = new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler');
+
+        $stub = $this->getMockBuilder('FileSystem')
+            ->getMock();
+        $stub->method('file_exists')
+            ->willReturn(true);
+
+        $stub->method('filemtime')
+            ->willReturn(21 * 60);
+
+        $imagePath->injectFileSystem($stub);
+
+        $this->assertEquals('./cache/remote/mf.jpg', $imagePath->obtainFilePath('./cache/remote/', 10));
+
+    }
+
 }
