@@ -13,10 +13,7 @@ function resize($imagePath,$opts=null){
         return 'cannot resize the image';
     }
 
-
-	$resizer = new Resizer($image, $configuration);
-
-	// This has to be done in resizer resize
+	$resizer = new Resizer($configuration);
 
 	return $resizer->resize($image);
 	

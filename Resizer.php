@@ -3,15 +3,11 @@
 require 'FileSystem.php';
 
 class Resizer {
-
-    private $image;
     private $configuration;
     private $fileSystem;
 
-    public function __construct($image, $configuration) {
-        $this->checkImage($image);
+    public function __construct($configuration) {
         $this->checkConfiguration($configuration);
-        $this->image = $image;
         $this->configuration = $configuration;
         $this->fileSystem = new FileSystem();
     }
@@ -20,15 +16,9 @@ class Resizer {
         $this->fileSystem = $fileSystem;
     }
 
-    private function checkImage($image) {
-        if (!($image instanceof ImagePath)) throw new InvalidArgumentException();
-    }
-
-    private function checkConfiguration($configuration) {
-        if (!($configuration instanceof Configuration)) throw new InvalidArgumentException();
-    }
-
     public function resize ($image) {
+        $this->checkImage($image);
+
         try {
             $sourcePath = $image->obtainFilePath(
                 $this->configuration->obtainRemote(),
@@ -175,5 +165,13 @@ class Resizer {
             error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
             throw new RuntimeException();
         }
+    }
+
+    private function checkImage($image) {
+        if (!($image instanceof ImagePath)) throw new InvalidArgumentException();
+    }
+
+    private function checkConfiguration($configuration) {
+        if (!($configuration instanceof Configuration)) throw new InvalidArgumentException();
     }
 }
