@@ -30,11 +30,11 @@ class Resizer {
 
         $destinationPath = $this->composeNewPathFrom($sourcePath);
 
-        $create = !isInCache($destinationPath, $sourcePath);
+        $create = !$this->isInCache($destinationPath, $sourcePath);
 
         if($create == true):
             try {
-                doResize($sourcePath, $destinationPath);
+                $this->doResize($sourcePath, $destinationPath);
             } catch (Exception $e) {
                 return 'cannot resize the image';
             }
@@ -84,6 +84,27 @@ class Resizer {
         return $isInCache;
     }
 
+    private function doResize($imagePath, $newPath) {
+        $opts = $this->configuration->asHash();
+        $w = $this->configuration->obtainWidth();
+        $h = $this->configuration->obtainHeight();
+
+        if(!empty($w) and !empty($h)):
+            $cmd = $this->commandWithCrop($imagePath, $newPath, $this->configuration);
+            if(true === $opts['scale']):
+                $cmd = $this->commandWithScale($imagePath, $newPath, $this->configuration);
+            endif;
+        else:
+            $cmd = $this->defaultShellCommand($this->configuration, $imagePath, $newPath);
+        endif;
+
+        $c = exec($cmd, $output, $return_code);
+        if($return_code != 0) {
+            error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
+            throw new RuntimeException();
+        }
+    }
+
     private function defaultShellCommand($imagePath, $newPath) {
         $opts = $this->configuration->asHash();
         $w = $this->configuration->obtainWidth();
@@ -111,11 +132,11 @@ class Resizer {
 
         $hasCrop = (true === $opts['crop']);
 
-        if(!$hasCrop && isPanoramic($imagePath)):
+        if(!$hasCrop && $this->isPanoramic($imagePath)):
             $resize = $w;
         endif;
 
-        if($hasCrop && !isPanoramic($imagePath)):
+        if($hasCrop && !$this->isPanoramic($imagePath)):
             $resize = $w;
         endif;
 
@@ -124,7 +145,7 @@ class Resizer {
 
     private function commandWithScale($imagePath, $newPath) {
         $opts = $this->configuration->asHash();
-        $resize = composeResizeOptions($imagePath);
+        $resize = $this->composeResizeOptions($imagePath);
 
         $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
             " -quality ". escapeshellarg($opts['quality']) . " " . escapeshellarg($newPath);
@@ -136,7 +157,7 @@ class Resizer {
         $opts = $this->configuration->asHash();
         $w = $this->configuration->obtainWidth();
         $h = $this->configuration->obtainHeight();
-        $resize = composeResizeOptions($imagePath);
+        $resize = $this->composeResizeOptions($imagePath);
 
         $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
             " -size ". escapeshellarg($w ."x". $h) .
@@ -146,26 +167,7 @@ class Resizer {
         return $cmd;
     }
 
-    private function doResize($imagePath, $newPath) {
-        $opts = $this->configuration->asHash();
-        $w = $this->configuration->obtainWidth();
-        $h = $this->configuration->obtainHeight();
 
-        if(!empty($w) and !empty($h)):
-            $cmd = commandWithCrop($imagePath, $newPath, $this->configuration);
-            if(true === $opts['scale']):
-                $cmd = commandWithScale($imagePath, $newPath, $this->configuration);
-            endif;
-        else:
-            $cmd = defaultShellCommand($this->configuration, $imagePath, $newPath);
-        endif;
-
-        $c = exec($cmd, $output, $return_code);
-        if($return_code != 0) {
-            error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
-            throw new RuntimeException();
-        }
-    }
 
     private function checkImage($image) {
         if (!($image instanceof ImagePath)) throw new InvalidArgumentException();
