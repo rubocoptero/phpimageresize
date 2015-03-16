@@ -9,35 +9,19 @@ date_default_timezone_set('Europe/Berlin');
 class ResizerTest extends PHPUnit_Framework_TestCase {
     private $validOpts = array('height' => 20);
 
-
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testNecessaryPathCollaboration() {
-        $resizer = new Resizer('anyNonPathObject', new Configuration($this->validOpts));
-    }
-
     /**
      * @expectedException InvalidArgumentException
      */
     public function testNecessaryConfigurationCollaboration() {
-        $resizer = new Resizer(new ImagePath(''), 'nonConfigurationObject');
+        $resizer = new Resizer('nonConfigurationObject');
     }
 
     public function testInstantiation() {
-        $this->assertInstanceOf('Resizer', new Resizer(new ImagePath(''), new Configuration($this->validOpts)));
-    }
-
-    public function testCreateNewPath() {
-        $resizer = new Resizer(
-            new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler'),
-            new Configuration($this->validOpts)
-        );
+        $this->assertInstanceOf('Resizer', new Resizer(new Configuration($this->validOpts)));
     }
 
     public function testComposeNewPathWithOuputFilename () {
         $resizer = new Resizer(
-            new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler'),
             new Configuration(array('output-filename' =>  'hola.jpg'))
         );
         $this->mockFileSystem($resizer);
@@ -47,7 +31,6 @@ class ResizerTest extends PHPUnit_Framework_TestCase {
 
     public function testComposeNewPathWithEverythingExceptOutputFilename () {
         $resizer = new Resizer(
-            new ImagePath('http://martinfowler.com/mf.jpg?query=hello&s=fowler'),
             new Configuration(array(
                 'width' =>  800,
                 'height' => 600,
