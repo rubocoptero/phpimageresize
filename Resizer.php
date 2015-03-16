@@ -20,20 +20,21 @@ class Resizer {
         $this->fileSystem = $fileSystem;
     }
 
-    private function checkImage($path) {
-        if (!($path instanceof ImagePath)) throw new InvalidArgumentException();
+    private function checkImage($image) {
+        if (!($image instanceof ImagePath)) throw new InvalidArgumentException();
     }
 
     private function checkConfiguration($configuration) {
         if (!($configuration instanceof Configuration)) throw new InvalidArgumentException();
     }
 
-    function composeNewPath($imagePath, $configuration) {
-        $w = $configuration->obtainWidth();
-        $h = $configuration->obtainHeight();
-        $filename = md5_file($imagePath);
-        $finfo = pathinfo($imagePath);
+    function composeNewPathFrom($currentPath) {
+        $w = $this->configuration->obtainWidth();
+        $h = $this->configuration->obtainHeight();
+        $filename = $this->fileSystem->md5_file($currentPath);
+        $finfo = $this->fileSystem->pathinfo($currentPath);
         $ext = $finfo['extension'];
+        $opts = $this->configuration->asHash();
 
         $cropSignal = isset($opts['crop']) && $opts['crop'] == true ? "_cp" : "";
         $scaleSignal = isset($opts['scale']) && $opts['scale'] == true ? "_sc" : "";
@@ -41,7 +42,7 @@ class Resizer {
         $heightSignal = !empty($h) ? '_h'.$h : '';
         $extension = '.'.$ext;
 
-        $newPath = $configuration->obtainCache() .$filename.$widthSignal.$heightSignal.$cropSignal.$scaleSignal.$extension;
+        $newPath = $this->configuration->obtainCache() .$filename.$widthSignal.$heightSignal.$cropSignal.$scaleSignal.$extension;
 
         if($opts['output-filename']) {
             $newPath = $opts['output-filename'];

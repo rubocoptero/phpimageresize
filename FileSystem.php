@@ -18,4 +18,12 @@ class FileSystem {
         return filemtime($filename);
     }
 
+    public function pathinfo($path) {
+        return pathinfo($path);
+    }
+
+    public function md5_file ($filepath) {
+        return md5_file($filepath);
+    }
+
 }
