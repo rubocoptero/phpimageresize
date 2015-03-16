@@ -30,8 +30,6 @@ class ImagePath {
         return $filename;
     }
 
-    // Should to be moved to ImagePath
-
     public function obtainFilePath($remoteFolder, $minutesToExpire) {
         $imagePath = '';
 
