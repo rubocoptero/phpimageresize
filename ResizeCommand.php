@@ -8,20 +8,20 @@ class ResizeCommand {
         $this->configuration = $configuration;
     }
 
-    public function execute($imagePath, $newPath) {
+    public function execute($sourcePath, $destinationPath) {
         $opts = $this->configuration->asHash();
 
         if($this->configuration->hasWidthAndHeight()):
             if(true === $opts['scale']):
-                $cmdParams = $this->obtainScaleParams($imagePath);
+                $cmdParams = $this->obtainScaleParams($sourcePath);
             else:
-                $cmdParams = $this->obtainCropParams($imagePath);
+                $cmdParams = $this->obtainCropParams($sourcePath);
             endif;
         else:
             $cmdParams = $this->obtainDefaultParams();
         endif;
 
-        $cmd = $this->obtainBeginning($imagePath) . $cmdParams . $this->obtainEnding($newPath);
+        $cmd = $this->obtainBeginning($sourcePath) . $cmdParams . $this->obtainEnding($destinationPath);
 
         $c = exec($cmd, $output, $return_code);
         if($return_code != 0) {
@@ -80,19 +80,20 @@ class ResizeCommand {
         return $resize;
     }
 
-    private function isPanoramic($imagePath) {
-        list($width,$height) = getimagesize($imagePath);
+    // Likely should go to Image
+    private function isPanoramic($path) {
+        list($width,$height) = getimagesize($path);
         return $width > $height;
     }
 
-    private function obtainBeginning($imagePath)
+    private function obtainBeginning($sourcePath)
     {
-        return $this->configuration->obtainConvertPath() . " " . escapeshellarg($imagePath);
+        return $this->configuration->obtainConvertPath() . " " . escapeshellarg($sourcePath);
     }
 
-    private function obtainEnding ($newPath)
+    private function obtainEnding ($destinationPath)
     {
         return " -quality ". escapeshellarg($this->configuration->obtainQuality()) .
-        " " . escapeshellarg($newPath);
+        " " . escapeshellarg($destinationPath);
     }
 }

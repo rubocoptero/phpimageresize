@@ -54,7 +54,6 @@ class ImagePath {
         return $imagePath;
     }
 
-
     private function download($filePath) {
         $img = $this->fileSystem->file_get_contents($this->sanitizedPath());
         $this->fileSystem->file_put_contents($filePath,$img);

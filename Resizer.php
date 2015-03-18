@@ -43,8 +43,6 @@ class Resizer {
             }
         endif;
 
-        // The new path must be the return value of resizer resize
-
         $cacheFilePath = str_replace($_SERVER['DOCUMENT_ROOT'],'',$destinationPath);
 
         return $cacheFilePath;
@@ -93,7 +91,7 @@ class Resizer {
 
         return $isInCache;
     }
-    
+
     private function checkImage($image) {
         if (!($image instanceof ImagePath)) throw new InvalidArgumentException();
     }
