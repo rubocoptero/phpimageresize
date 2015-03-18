@@ -81,6 +81,14 @@ class Configuration {
         }
     }
 
+    private function hasWidthAndHeight()
+    {
+        $w = $this->obtainWidth();
+        $h = $this->obtainHeight();
+
+        return !empty($w) and !empty($h);
+    }
+
     private function sanitize($opts)
     {
         if ($opts == null) return array();

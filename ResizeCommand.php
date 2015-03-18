@@ -10,17 +10,15 @@ class ResizeCommand {
 
     public function execute($imagePath, $newPath) {
         $opts = $this->configuration->asHash();
-        $w = $this->configuration->obtainWidth();
-        $h = $this->configuration->obtainHeight();
 
-        if(!empty($w) and !empty($h)):
+        if($this->configuration->hasWidthAndHeight()):
             if(true === $opts['scale']):
-                $cmdParams = $this->obtainScaleParams($imagePath, $newPath, $this->configuration);
+                $cmdParams = $this->obtainScaleParams($imagePath);
             else:
-                $cmdParams = $this->obtainCropParams($imagePath, $newPath, $this->configuration);
+                $cmdParams = $this->obtainCropParams($imagePath);
             endif;
         else:
-            $cmdParams = $this->obtainDefaultParams($this->configuration, $imagePath, $newPath);
+            $cmdParams = $this->obtainDefaultParams();
         endif;
 
         $cmd = $this->obtainBeginning($imagePath) . $cmdParams . $this->obtainEnding($newPath);
@@ -32,7 +30,7 @@ class ResizeCommand {
         }
     }
 
-    private function obtainDefaultParams($imagePath, $newPath) {
+    private function obtainDefaultParams() {
         $opts = $this->configuration->asHash();
         $w = $this->configuration->obtainWidth();
         $h = $this->configuration->obtainHeight();
@@ -43,21 +41,18 @@ class ResizeCommand {
         return $command;
     }
 
-    private function obtainScaleParams($imagePath, $newPath) {
+    private function obtainScaleParams($imagePath) {
         $resize = $this->composeResizeOptions($imagePath);
 
-        $cmd = " -resize ". escapeshellarg($resize);
-
-        return $cmd;
+        return " -resize ". escapeshellarg($resize);
     }
 
-    private function obtainCropParams($imagePath, $newPath) {
+    private function obtainCropParams($imagePath) {
         $opts = $this->configuration->asHash();
         $w = $this->configuration->obtainWidth();
         $h = $this->configuration->obtainHeight();
-        $resize = $this->composeResizeOptions($imagePath);
 
-        $cmd = " -resize ". escapeshellarg($resize) .
+        $cmd = obtainScaleParams($imagePath) .
             " -size ". escapeshellarg($w ."x". $h) .
             " xc:". escapeshellarg($opts['canvas-color']) .
             " +swap -gravity center -composite";
@@ -97,7 +92,7 @@ class ResizeCommand {
 
     private function obtainEnding ($newPath)
     {
-        " -quality ". escapeshellarg($this->configuration->obtainQuality()) .
+        return " -quality ". escapeshellarg($this->configuration->obtainQuality()) .
         " " . escapeshellarg($newPath);
     }
 }
