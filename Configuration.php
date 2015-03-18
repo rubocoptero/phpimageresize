@@ -10,6 +10,7 @@ class Configuration {
     const WIDTH_KEY = 'width';
     const HEIGHT_KEY = 'height';
     const OUTPUT_KEY = 'output-filename';
+    const QUALITY_KEY = 'quality';
 
     const CONVERT_PATH = 'convert';
 
@@ -28,7 +29,7 @@ class Configuration {
             'canvas-color' => 'transparent',
             self::CACHE_KEY => self::CACHE_PATH,
             self::REMOTE_KEY => self::REMOTE_PATH,
-            'quality' => 90,
+            self::QUALITY_KEY => 90,
             'cache_http_minutes' => 20,
         );
 
@@ -65,6 +66,10 @@ class Configuration {
 
     public function obtainOutputFilename() {
         return $this->opts[self::OUTPUT_KEY];
+    }
+
+    public function obtainQuality() {
+        return $this->opts[self::QUALITY_KEY];
     }
 
     private function validate ($opts) {
