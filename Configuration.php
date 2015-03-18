@@ -63,6 +63,10 @@ class Configuration {
         return $this->opts[self::CACHE_MINUTES_KEY];
     }
 
+    public function obtainOutputFilename() {
+        return $this->opts[self::OUTPUT_KEY];
+    }
+
     private function validate ($opts) {
         if (empty($opts[self::WIDTH_KEY]) &&
             empty($opts[self::HEIGHT_KEY]) &&
@@ -72,10 +76,10 @@ class Configuration {
         }
     }
 
-    private function sanitize($opts) {
-        if($opts == null) return array();
+    private function sanitize($opts)
+    {
+        if ($opts == null) return array();
 
         return $opts;
     }
-
 }

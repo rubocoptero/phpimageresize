@@ -48,26 +48,33 @@ class Resizer {
     }
 
     public function composeNewPathFrom($currentPath) {
-        $w = $this->configuration->obtainWidth();
-        $h = $this->configuration->obtainHeight();
+        if($this->configuration->obtainOutputFilename()) {
+            $newPath = $this->configuration->obtainOutputFilename();
+        } else {
+            $newPath = $this->configuration->obtainCache() . $this->obtainNewFilename($currentPath);
+        }
+
+        return $newPath;
+    }
+
+    private function obtainNewFilename ($currentPath) {
         $filename = $this->fileSystem->md5_file($currentPath);
         $finfo = $this->fileSystem->pathinfo($currentPath);
-        $ext = $finfo['extension'];
-        $opts = $this->configuration->asHash();
+        $extension = '.' . $finfo['extension'];
 
+        return $filename . $this->composeFilenameSuffix() . $extension;
+    }
+
+    private function composeFilenameSuffix () {
+        $opts = $this->configuration->asHash();
+        $w = $this->configuration->obtainWidth();
+        $h = $this->configuration->obtainHeight();
         $cropSignal = isset($opts['crop']) && $opts['crop'] == true ? "_cp" : "";
         $scaleSignal = isset($opts['scale']) && $opts['scale'] == true ? "_sc" : "";
         $widthSignal = !empty($w) ? '_w'.$w : '';
         $heightSignal = !empty($h) ? '_h'.$h : '';
-        $extension = '.'.$ext;
 
-        $newPath = $this->configuration->obtainCache() .$filename.$widthSignal.$heightSignal.$cropSignal.$scaleSignal.$extension;
-
-        if($opts['output-filename']) {
-            $newPath = $opts['output-filename'];
-        }
-
-        return $newPath;
+        return $widthSignal.$heightSignal.$cropSignal.$scaleSignal;
     }
 
     private function isInCache($destinationPath, $sourcePath) {
