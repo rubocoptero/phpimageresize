@@ -1,15 +1,18 @@
 <?php
 
 require 'FileSystem.php';
+require 'ResizeCommand.php';
 
 class Resizer {
     private $configuration;
     private $fileSystem;
+    private $resizeCommand;
 
     public function __construct($configuration) {
         $this->checkConfiguration($configuration);
         $this->configuration = $configuration;
         $this->fileSystem = new FileSystem();
+        $this->resizeCommand = new ResizeCommand($configuration);
     }
 
     public function injectFileSystem(FileSystem $fileSystem) {
@@ -34,7 +37,7 @@ class Resizer {
 
         if($create == true):
             try {
-                $this->doResize($sourcePath, $destinationPath);
+                $this->resizeCommand->execute($sourcePath, $destinationPath);
             } catch (Exception $e) {
                 return 'cannot resize the image';
             }
@@ -90,100 +93,7 @@ class Resizer {
 
         return $isInCache;
     }
-
-    private function doResize($imagePath, $newPath) {
-        $opts = $this->configuration->asHash();
-        $w = $this->configuration->obtainWidth();
-        $h = $this->configuration->obtainHeight();
-
-        if(!empty($w) and !empty($h)):
-            $cmd = $this->commandWithCrop($imagePath, $newPath, $this->configuration);
-            if(true === $opts['scale']):
-                $cmd = $this->commandWithScale($imagePath, $newPath, $this->configuration);
-            endif;
-        else:
-            $cmd = $this->defaultShellCommand($this->configuration, $imagePath, $newPath);
-        endif;
-
-        $c = exec($cmd, $output, $return_code);
-        if($return_code != 0) {
-            error_log("Tried to execute : $cmd, return code: $return_code, output: " . print_r($output, true));
-            throw new RuntimeException();
-        }
-    }
-
-    private function defaultShellCommand($imagePath, $newPath) {
-        $opts = $this->configuration->asHash();
-        $w = $this->configuration->obtainWidth();
-        $h = $this->configuration->obtainHeight();
-
-        $command = $this->configuration->obtainConvertPath() ." " . escapeshellarg($imagePath) .
-
-            " -thumbnail ". (!empty($h) ? 'x':'') . $w ."".
-            (isset($opts['maxOnly']) && $opts['maxOnly'] == true ? "\>" : "") .
-
-            " -quality ". escapeshellarg($opts['quality']) ." ". escapeshellarg($newPath);
-
-        return $command;
-    }
-
-    private function isPanoramic($imagePath) {
-        list($width,$height) = getimagesize($imagePath);
-        return $width > $height;
-    }
-
-    private function composeResizeOptions($imagePath) {
-        $opts = $this->configuration->asHash();
-        $w = $this->configuration->obtainWidth();
-        $h = $this->configuration->obtainHeight();
-
-        $resize = "x".$h;
-
-        $hasCrop = (true === $opts['crop']);
-
-        if(!$hasCrop && $this->isPanoramic($imagePath)):
-            $resize = $w;
-        endif;
-
-        if($hasCrop && !$this->isPanoramic($imagePath)):
-            $resize = $w;
-        endif;
-
-        return $resize;
-    }
-
-    private function commandWithScale($imagePath, $newPath) {
-        $opts = $this->configuration->asHash();
-        $resize = $this->composeResizeOptions($imagePath);
-
-        $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) .
-            " -resize ". escapeshellarg($resize) .
-            " -quality ". escapeshellarg($opts['quality']) . " " . escapeshellarg($newPath);
-
-        return $cmd;
-    }
-
-    private function commandWithCrop($imagePath, $newPath) {
-        $opts = $this->configuration->asHash();
-        $w = $this->configuration->obtainWidth();
-        $h = $this->configuration->obtainHeight();
-        $resize = $this->composeResizeOptions($imagePath);
-
-        $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) .
-
-            " -resize ". escapeshellarg($resize) .
-
-            " -size ". escapeshellarg($w ."x". $h) .
-            " xc:". escapeshellarg($opts['canvas-color']) .
-            " +swap -gravity center -composite" .
-
-            " -quality " . escapeshellarg($opts['quality'])." ".escapeshellarg($newPath);
-
-        return $cmd;
-    }
-
-
-
+    
     private function checkImage($image) {
         if (!($image instanceof ImagePath)) throw new InvalidArgumentException();
     }
