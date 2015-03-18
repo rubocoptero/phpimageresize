@@ -118,8 +118,10 @@ class Resizer {
         $h = $this->configuration->obtainHeight();
 
         $command = $this->configuration->obtainConvertPath() ." " . escapeshellarg($imagePath) .
+
             " -thumbnail ". (!empty($h) ? 'x':'') . $w ."".
             (isset($opts['maxOnly']) && $opts['maxOnly'] == true ? "\>" : "") .
+
             " -quality ". escapeshellarg($opts['quality']) ." ". escapeshellarg($newPath);
 
         return $command;
@@ -154,7 +156,8 @@ class Resizer {
         $opts = $this->configuration->asHash();
         $resize = $this->composeResizeOptions($imagePath);
 
-        $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
+        $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) .
+            " -resize ". escapeshellarg($resize) .
             " -quality ". escapeshellarg($opts['quality']) . " " . escapeshellarg($newPath);
 
         return $cmd;
@@ -166,10 +169,15 @@ class Resizer {
         $h = $this->configuration->obtainHeight();
         $resize = $this->composeResizeOptions($imagePath);
 
-        $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) ." -resize ". escapeshellarg($resize) .
+        $cmd = $this->configuration->obtainConvertPath() ." ". escapeshellarg($imagePath) .
+
+            " -resize ". escapeshellarg($resize) .
+
             " -size ". escapeshellarg($w ."x". $h) .
             " xc:". escapeshellarg($opts['canvas-color']) .
-            " +swap -gravity center -composite -quality ". escapeshellarg($opts['quality'])." ".escapeshellarg($newPath);
+            " +swap -gravity center -composite" .
+
+            " -quality " . escapeshellarg($opts['quality'])." ".escapeshellarg($newPath);
 
         return $cmd;
     }
