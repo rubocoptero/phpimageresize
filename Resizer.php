@@ -20,35 +20,31 @@ class Resizer {
     }
 
     public function resize ($image) {
+        $remoteFolder = $this->configuration->obtainRemote();
+        $cacheMinutes = $this->configuration->obtainCacheMinutes();
+
         $this->checkImage($image);
 
         try {
-            $sourcePath = $image->obtainFilePath(
-                $this->configuration->obtainRemote(),
-                $this->configuration->obtainCacheMinutes()
-            );
+            $sourcePath = $image->obtainFilePath($remoteFolder, $cacheMinutes);
         } catch (Exception $e) {
             return 'image not found';
         }
 
-        $destinationPath = $this->composeNewPathFrom($sourcePath);
+        $destinationPath = $this->composeDestinationPath($sourcePath);
 
-        $create = !$this->isInCache($destinationPath, $sourcePath);
-
-        if($create == true):
-            try {
-                $this->resizeCommand->execute($sourcePath, $destinationPath);
-            } catch (Exception $e) {
-                return 'cannot resize the image';
-            }
-        endif;
+        try {
+            $this->executeResize($destinationPath, $sourcePath);
+        } catch (Exception $e) {
+            return 'cannot resize the image';
+        }
 
         $cacheFilePath = str_replace($_SERVER['DOCUMENT_ROOT'],'',$destinationPath);
 
         return $cacheFilePath;
     }
 
-    public function composeNewPathFrom($currentPath) {
+    public function composeDestinationPath($currentPath) {
         if($this->configuration->obtainOutputFilename()) {
             $newPath = $this->configuration->obtainOutputFilename();
         } else {
@@ -98,5 +94,18 @@ class Resizer {
 
     private function checkConfiguration($configuration) {
         if (!($configuration instanceof Configuration)) throw new InvalidArgumentException();
+    }
+
+    /**
+     * @param $destinationPath
+     * @param $sourcePath
+     */
+    private function executeResize($destinationPath, $sourcePath)
+    {
+        $create = !$this->isInCache($destinationPath, $sourcePath);
+
+        if ($create == true):
+            $this->resizeCommand->execute($sourcePath, $destinationPath);
+        endif;
     }
 }

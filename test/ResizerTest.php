@@ -26,7 +26,7 @@ class ResizerTest extends PHPUnit_Framework_TestCase {
         );
         $this->mockFileSystem($resizer);
 
-        $this->assertEquals('hola.jpg', $resizer->composeNewPathFrom('adios.jpg'));
+        $this->assertEquals('hola.jpg', $resizer->composeDestinationPath('adios.jpg'));
     }
 
     public function testComposeNewPathWithEverythingExceptOutputFilename () {
@@ -43,7 +43,7 @@ class ResizerTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals(
             './cache/jasfjo3uj2912309u13j1esj09safjls_w800_h600_cp_sc.jpg',
-            $resizer->composeNewPathFrom('adios.jpg')
+            $resizer->composeDestinationPath('adios.jpg')
         );
     }
 
