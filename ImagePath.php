@@ -31,11 +31,10 @@ class ImagePath {
     }
 
     public function obtainFilePath($remoteFolder, $minutesToExpire) {
-        $imagePath = '';
+        $imagePath = $this->sanitizedPath();
 
         if($this->isHttpProtocol()):
-            $filename = $this->obtainFileName();
-            $local_filepath = $remoteFolder .$filename;
+            $local_filepath = $remoteFolder . $this->obtainFileName();
             $inCache = $this->isInCache($local_filepath, $minutesToExpire);
 
             if(!$inCache):
