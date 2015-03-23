@@ -96,16 +96,10 @@ class Resizer {
         if (!($configuration instanceof Configuration)) throw new InvalidArgumentException();
     }
 
-    /**
-     * @param $destinationPath
-     * @param $sourcePath
-     */
     private function executeResize($destinationPath, $sourcePath)
     {
-        $create = !$this->isInCache($destinationPath, $sourcePath);
+        if (!$this->isInCache($destinationPath, $sourcePath)) { return ; }
 
-        if ($create == true):
-            $this->resizeCommand->execute($sourcePath, $destinationPath);
-        endif;
+        $this->resizeCommand->execute($sourcePath, $destinationPath);
     }
 }
