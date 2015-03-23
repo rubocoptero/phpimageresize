@@ -39,9 +39,7 @@ class Resizer {
             return 'cannot resize the image';
         }
 
-        $cacheFilePath = str_replace($_SERVER['DOCUMENT_ROOT'],'',$destinationPath);
-
-        return $cacheFilePath;
+        return $this->obtainParentPath($destinationPath);
     }
 
     public function composeDestinationPath($currentPath) {
@@ -101,5 +99,12 @@ class Resizer {
         if (!$this->isInCache($destinationPath, $sourcePath)) { return ; }
 
         $this->resizeCommand->execute($sourcePath, $destinationPath);
+    }
+
+    private function obtainParentPath($destinationPath)
+    {
+        $cacheFilePath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $destinationPath);
+
+        return $cacheFilePath;
     }
 }
